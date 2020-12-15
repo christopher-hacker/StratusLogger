@@ -8,7 +8,17 @@ import {
   convertFromRaw,
 } from "draft-js";
 import React from "react";
-import { Bold, Chrome, Italic, Underline } from "react-feather";
+import {
+  Bold,
+  Italic,
+  Underline,
+  Play,
+  Pause,
+  FastForward,
+  Rewind,
+  SkipForward,
+  SkipBack,
+} from "react-feather";
 import "./editor.css";
 import "draft-js/dist/Draft.css";
 
@@ -37,12 +47,6 @@ class Logger extends React.Component {
       } else {
         return null;
       }
-      // if (rawEditorData !== null) {
-      //   var contentState = convertFromRaw(rawEditorData),
-      //   this.setState({
-      //     editorState: EditorState.createWithContent(contentState),
-      //   });
-      // }
     });
   }
 
@@ -52,11 +56,9 @@ class Logger extends React.Component {
 
     obj[slug] = data;
     chrome.storage.local.set(obj, () => {});
-    // localStorage.setItem("editorData", JSON.stringify(data));
   }
 
   getSavedEditorData(_callback) {
-    // const savedData = localStorage.getItem("editorData");
     var slug = this.getSlug();
 
     chrome.storage.local.get(slug, (savedData) => {
@@ -94,10 +96,15 @@ class Logger extends React.Component {
     return (
       <div className="logger-wrapper">
         <div className="logger-toolbar">
-          <InlineStyleControls
-            editorState={this.state.editorState}
-            onToggle={this.toggleInlineStyle}
-          />
+          <div class="editor-controls">
+            <InlineStyleControls
+              editorState={this.state.editorState}
+              onToggle={this.toggleInlineStyle}
+            />
+            <div class="editor-controls right">
+              <PlaybackControls />
+            </div>
+          </div>
         </div>
         <div className="logger-editor-wrapper">
           <Editor
@@ -111,6 +118,146 @@ class Logger extends React.Component {
   }
 }
 
+class PlaybackControls extends React.Component {
+  constructor() {
+    super();
+    this.playbackInterface = new PlaybackInterface();
+  }
+
+  render() {
+    return (
+      <div className="playback-controls">
+        <PlaybackButton
+          icon={SkipBack}
+          onClick={this.playbackInterface.actions.back10}
+        />
+        <PlaybackButton
+          icon={Rewind}
+          onClick={this.playbackInterface.actions.rewind}
+        />
+        <PlayPause playbackInterface={this.playbackInterface} />
+        <PlaybackButton
+          icon={FastForward}
+          onClick={this.playbackInterface.actions.fastForward}
+        />
+        <PlaybackButton
+          icon={SkipForward}
+          onClick={this.playbackInterface.actions.forward10}
+        />
+      </div>
+    );
+  }
+}
+
+class PlaybackButton extends React.Component {
+  constructor() {
+    super();
+    this.onClick = (e) => {
+      e.preventDefault();
+      this.props.onClick();
+    };
+  }
+  render() {
+    let className = "editor-button";
+    if (this.props.active) {
+      className += " editor-active-button";
+    }
+    let Icon = this.props.icon;
+    return <Icon className={className} onClick={this.onClick} />;
+  }
+}
+
+class PlaybackInterface {
+  constructor() {
+    var els = document.querySelectorAll(".btn-transport"),
+      labels = [
+        "back1",
+        "back10",
+        "rewind",
+        "playPause",
+        "fastForward",
+        "forward10",
+        "forward1",
+      ];
+
+    els.forEach((el) => {
+      el.addEventListener("click", () => {
+        this.checkStatus();
+      });
+    });
+
+    this.buttons = {};
+    this.actions = {};
+    els.forEach((el, i) => {
+      let label = labels[i];
+      this.buttons[label] = el;
+      this.actions[label] = () => {
+        this.checkStatus();
+        el.click();
+      };
+    });
+  }
+
+  checkStatus() {
+    if (document.querySelectorAll(".btn-play").length > 0) {
+      window.postMessage({
+        source: "__stratus_logger_extension__",
+        playerStatus: "playing",
+      });
+    } else {
+      window.postMessage({
+        source: "__stratus_logger_extension__",
+        playerStatus: "paused",
+      });
+    }
+  }
+}
+
+class PlayPause extends React.Component {
+  constructor() {
+    super();
+    this.state = { paused: true };
+  }
+  didReceiveMessage(event) {
+    var msg = event.data;
+    if (msg.source == "__stratus_logger_extension__") {
+      switch (msg.playerStatus) {
+        case "paused":
+          this.setState({ paused: true });
+          break;
+        case "playing":
+          this.setState({ paused: false });
+          break;
+        default:
+          break;
+      }
+    }
+  }
+  componentDidMount() {
+    window.addEventListener("message", (event) => {
+      if (event.source !== window) return;
+      this.didReceiveMessage(event);
+    });
+  }
+  render() {
+    if (this.state.paused) {
+      return (
+        <Play
+          className="editor-button"
+          onClick={this.props.playbackInterface.actions.playPause}
+        />
+      );
+    } else {
+      return (
+        <Pause
+          className="editor-button"
+          onClick={this.props.playbackInterface.actions.playPause}
+        />
+      );
+    }
+  }
+}
+
 class StyleButton extends React.Component {
   constructor() {
     super();
@@ -120,36 +267,27 @@ class StyleButton extends React.Component {
     };
   }
   render() {
-    let className = "RichEditor-styleButton";
+    let className = "editor-button";
     if (this.props.active) {
-      className += " RichEditor-activeButton";
+      className += " editor-active-button";
     }
     let Icon = this.props.icon;
-    return (
-      // <span className={className} onMouseDown={this.onToggle}>
-      //   {this.props.label}
-      // </span>
-      <Icon className={className} onMouseDown={this.onToggle} />
-    );
+    return <Icon className={className} onMouseDown={this.onToggle} />;
   }
 }
 
 const InlineStyleControls = (props) => {
   var currentStyle = props.editorState.getCurrentInlineStyle();
-  return (
-    <div className="RichEditor-controls">
-      {INLINE_STYLES.map((type) => (
-        <StyleButton
-          key={type.label}
-          active={currentStyle.has(type.style)}
-          label={type.label}
-          icon={type.icon}
-          onToggle={props.onToggle}
-          style={type.style}
-        />
-      ))}
-    </div>
-  );
+  return INLINE_STYLES.map((type) => (
+    <StyleButton
+      key={type.label}
+      active={currentStyle.has(type.style)}
+      label={type.label}
+      icon={type.icon}
+      onToggle={props.onToggle}
+      style={type.style}
+    />
+  ));
 };
 
 var INLINE_STYLES = [
@@ -158,4 +296,4 @@ var INLINE_STYLES = [
   { label: "Underline", style: "UNDERLINE", icon: Underline },
 ];
 
-export default Logger;
+export { Logger };

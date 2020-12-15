@@ -1,6 +1,6 @@
 import React from "react";
 import { X, Minimize2, Maximize2, Edit3 } from "react-feather";
-import Logger from "./Components/Editor";
+import { Logger } from "./Components/Editor";
 import "./App.css";
 
 const iconSVG =
@@ -134,7 +134,6 @@ class OverlayPanel extends React.Component {
           this.setState({ open: true, minimized: false });
           break;
         default:
-          console.error("Unrecognized action: " + msg.action);
           break;
       }
     }
