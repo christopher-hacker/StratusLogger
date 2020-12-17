@@ -6,6 +6,8 @@ import {
   RichUtils,
   convertToRaw,
   convertFromRaw,
+  Modifier,
+  CompositeDecorator,
 } from "draft-js";
 import React from "react";
 import {
@@ -18,6 +20,7 @@ import {
   Rewind,
   SkipForward,
   SkipBack,
+  Clock,
 } from "react-feather";
 import "./editor.css";
 import "draft-js/dist/Draft.css";
@@ -25,24 +28,40 @@ import "draft-js/dist/Draft.css";
 class Logger extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { editorState: EditorState.createEmpty() };
     this.onChange = (editorState) => {
       const raw = convertToRaw(editorState.getCurrentContent());
       this.saveEditorContent(raw);
       this.setState({ editorState });
     };
     this.handleKeyCommand = this.handleKeyCommand.bind(this);
+    this.insertText = this.insertText.bind(this);
+    this.compositeDecorator = new CompositeDecorator([
+      {
+        strategy: timestampStrategy,
+        component: TimestampSpan,
+      },
+    ]);
+
+    this.state = {
+      editorState: EditorState.createEmpty(this.compositeDecorator),
+    };
   }
 
   componentDidMount() {
     var slug = this.getSlug();
     this.getSavedEditorData((savedData) => {
       if (Object.keys(savedData).includes(slug)) {
-        var contentState = savedData[slug];
-        this.setState({
-          editorState: EditorState.createWithContent(
+        var contentState = savedData[slug],
+          editorState = EditorState.createWithContent(
             convertFromRaw(contentState)
-          ),
+          );
+
+        editorState = EditorState.set(editorState, {
+          decorator: this.compositeDecorator,
+        });
+
+        this.setState({
+          editorState: editorState,
         });
       } else {
         return null;
@@ -92,6 +111,16 @@ class Logger extends React.Component {
     );
   };
 
+  insertText(text) {
+    const newEditorState = EditorState.set(
+      insertAtCursor(text, this.state.editorState),
+      { decorator: this.compositeDecorator }
+    );
+    this.setState({
+      editorState: newEditorState,
+    });
+  }
+
   render() {
     return (
       <div className="logger-wrapper">
@@ -102,7 +131,10 @@ class Logger extends React.Component {
               onToggle={this.toggleInlineStyle}
             />
             <div class="editor-controls right">
-              <PlaybackControls />
+              <PlaybackControls
+                editorState={this.state.editorState}
+                insertText={this.insertText}
+              />
             </div>
           </div>
         </div>
@@ -119,14 +151,20 @@ class Logger extends React.Component {
 }
 
 class PlaybackControls extends React.Component {
-  constructor() {
-    super();
+  constructor(props) {
+    super(props);
     this.playbackInterface = new PlaybackInterface();
+    this.getTimestamp = this.getTimestamp.bind(this);
+  }
+
+  getTimestamp() {
+    this.props.insertText("(" + this.playbackInterface.getTimestamp() + ") ");
   }
 
   render() {
     return (
       <div className="playback-controls">
+        <PlaybackButton icon={Clock} onClick={this.getTimestamp} />
         <PlaybackButton
           icon={SkipBack}
           onClick={this.playbackInterface.actions.back10}
@@ -210,6 +248,24 @@ class PlaybackInterface {
         playerStatus: "paused",
       });
     }
+  }
+
+  getTimestampEl() {
+    return document
+      .querySelectorAll(".timecode-control")[1]
+      .querySelector("input");
+  }
+
+  getTimestamp() {
+    return this.getTimestampEl().value;
+  }
+
+  jumpToTime(timestampString) {
+    let el = this.getTimestampEl();
+    // drop the parentheses
+    el.value = timestampString.slice(1, -1);
+    // trigger jump in player
+    el.dispatchEvent(new KeyboardEvent("blur"));
   }
 }
 
@@ -295,5 +351,68 @@ var INLINE_STYLES = [
   { label: "Italic", style: "ITALIC", icon: Italic },
   { label: "Underline", style: "UNDERLINE", icon: Underline },
 ];
+
+function insertAtCursor(text, editorState, data) {
+  const currentContent = editorState.getCurrentContent(),
+    currentSelection = editorState.getSelection();
+
+  const newContent = Modifier.replaceText(
+    currentContent,
+    currentSelection,
+    text
+  );
+
+  const newEditorState = EditorState.push(
+    editorState,
+    newContent,
+    "insert-characters"
+  );
+
+  return EditorState.forceSelection(
+    newEditorState,
+    newContent.getSelectionAfter()
+  );
+}
+
+const TIMESTAMP_REGEX = /\(\d\d:\d\d:\d\d,\d\d\)/g;
+
+function timestampStrategy(contentBlock, callback, contentState) {
+  findWithRegex(TIMESTAMP_REGEX, contentBlock, callback);
+}
+
+function findWithRegex(regex, contentBlock, callback) {
+  const text = contentBlock.getText();
+  let matchArr, start;
+  while ((matchArr = regex.exec(text)) !== null) {
+    start = matchArr.index;
+    callback(start, start + matchArr[0].length);
+  }
+}
+
+class TimestampSpan extends React.Component {
+  constructor(props) {
+    super(props);
+    this.playbackInterface = new PlaybackInterface();
+  }
+
+  jumpToTime(timestampString) {
+    this.playbackInterface.jumpToTime(timestampString);
+  }
+
+  render() {
+    return (
+      <span
+        className="timestamp"
+        data-offset-key={this.props.offsetKey}
+        onClick={() => {
+          let timestampString = this.props.children[0].props.text;
+          this.jumpToTime(timestampString);
+        }}
+      >
+        {this.props.children}
+      </span>
+    );
+  }
+}
 
 export { Logger };

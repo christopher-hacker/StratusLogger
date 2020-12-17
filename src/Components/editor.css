@@ -69,3 +69,9 @@
 .right {
   float: right;
 }
+
+.timestamp {
+  font-weight: bold;
+  color: #5890ff;
+  cursor: pointer;
+}
