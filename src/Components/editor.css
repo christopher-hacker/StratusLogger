@@ -75,3 +75,27 @@
   color: #5890ff;
   cursor: pointer;
 }
+
+.button-wrapper {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.shortcut-help-tooltip {
+  position: fixed;
+  transform: translate(-5px, 30px);
+  background-color: #3e3e3e;
+  border: 1px solid #666;
+  border-radius: 5px;
+  padding: 2.5px 5px;
+  font-size: 0.9em;
+  text-align: center;
+  opacity: 0.9;
+  z-index: 9999999999999999;
+}
+
+.shortcut-help {
+  font-family: monospace;
+  font-style: italic;
+}

@@ -95,6 +95,11 @@ class Logger extends React.Component {
   }
 
   handleKeyCommand(command, editorState) {
+    // override cmd + j so I can use it for timestamps
+    if (command == "code") {
+      return;
+    }
+
     const newState = RichUtils.handleKeyCommand(editorState, command);
 
     if (newState) {
@@ -157,30 +162,70 @@ class PlaybackControls extends React.Component {
     this.getTimestamp = this.getTimestamp.bind(this);
   }
 
+  componentDidMount() {
+    // set up keyboard shortcuts
+    document.addEventListener("keyup", (e) => {
+      this.onKeyUp(e);
+    });
+  }
+
   getTimestamp() {
     this.props.insertText("(" + this.playbackInterface.getTimestamp() + ") ");
+  }
+
+  onKeyUp(e) {
+    if (e.ctrlKey && e.keyCode == 74) {
+      this.getTimestamp();
+    } else if (e.keyCode == 27) {
+      this.playbackInterface.actions.playPause();
+    } else if (e.ctrlKey && !e.shiftKey && e.keyCode == 37) {
+      this.playbackInterface.actions.back10();
+    } else if (e.ctrlKey && e.shiftKey && e.keyCode == 37) {
+      this.playbackInterface.actions.rewind();
+    } else if (e.ctrlKey && e.shiftKey && e.keyCode == 39) {
+      this.playbackInterface.actions.fastForward();
+    } else if (e.ctrlKey && !e.shiftKey && e.keyCode == 39) {
+      this.playbackInterface.actions.forward10();
+    }
   }
 
   render() {
     return (
       <div className="playback-controls">
-        <PlaybackButton icon={Clock} onClick={this.getTimestamp} />
+        <PlaybackButton
+          icon={Clock}
+          onClick={this.getTimestamp}
+          shortcutHelp="ctrl + J"
+          shortcutAction="insert timestamp"
+        />
         <PlaybackButton
           icon={SkipBack}
           onClick={this.playbackInterface.actions.back10}
+          shortcutHelp="ctrl + ←"
+          shortcutAction="skip back"
         />
         <PlaybackButton
           icon={Rewind}
           onClick={this.playbackInterface.actions.rewind}
+          shortcutHelp="ctrl + shift + ←"
+          shortcutAction="rewind"
         />
-        <PlayPause playbackInterface={this.playbackInterface} />
+        <PlayPause
+          playbackInterface={this.playbackInterface}
+          shortcutHelp="esc"
+          shortcutAction="play"
+        />
         <PlaybackButton
           icon={FastForward}
           onClick={this.playbackInterface.actions.fastForward}
+          shortcutHelp="ctrl + shift + →"
+          shortcutAction="fast forward"
         />
         <PlaybackButton
           icon={SkipForward}
           onClick={this.playbackInterface.actions.forward10}
+          shortcutHelp="ctrl + →"
+          shortcutAction="skip forward"
         />
       </div>
     );
@@ -188,20 +233,49 @@ class PlaybackControls extends React.Component {
 }
 
 class PlaybackButton extends React.Component {
-  constructor() {
-    super();
+  constructor(props) {
+    super(props);
+    this.state = { hover: false };
     this.onClick = (e) => {
       e.preventDefault();
       this.props.onClick();
     };
   }
+
+  handleMouseIn() {
+    this.setState({ hover: true });
+  }
+
+  handleMouseOut() {
+    this.setState({ hover: false });
+  }
+
   render() {
+    const tooltipStyle = {
+      display: this.state.hover ? "block" : "none",
+    };
+
     let className = "editor-button";
     if (this.props.active) {
       className += " editor-active-button";
     }
     let Icon = this.props.icon;
-    return <Icon className={className} onClick={this.onClick} />;
+    return (
+      <div
+        className="button-wrapper"
+        onMouseOver={this.handleMouseIn.bind(this)}
+        onMouseOut={this.handleMouseOut.bind(this)}
+      >
+        <div className="shortcut-help-tooltip" style={tooltipStyle}>
+          <span className="shortcut-action">{this.props.shortcutAction}</span>
+          <br />
+          <span className="shortcut-help">
+            {"(" + this.props.shortcutHelp + ")"}
+          </span>
+        </div>
+        <Icon className={className} onClick={this.onClick} />
+      </div>
+    );
   }
 }
 
@@ -272,8 +346,9 @@ class PlaybackInterface {
 class PlayPause extends React.Component {
   constructor() {
     super();
-    this.state = { paused: true };
+    this.state = { paused: true, hover: false };
   }
+
   didReceiveMessage(event) {
     var msg = event.data;
     if (msg.source == "__stratus_logger_extension__") {
@@ -289,28 +364,58 @@ class PlayPause extends React.Component {
       }
     }
   }
+
   componentDidMount() {
     window.addEventListener("message", (event) => {
       if (event.source !== window) return;
       this.didReceiveMessage(event);
     });
   }
+
+  handleMouseIn() {
+    this.setState({ hover: true });
+  }
+
+  handleMouseOut() {
+    this.setState({ hover: false });
+  }
+
   render() {
+    let icon;
     if (this.state.paused) {
-      return (
+      icon = (
         <Play
           className="editor-button"
           onClick={this.props.playbackInterface.actions.playPause}
         />
       );
     } else {
-      return (
+      icon = (
         <Pause
           className="editor-button"
           onClick={this.props.playbackInterface.actions.playPause}
         />
       );
     }
+    const tooltipStyle = {
+      display: this.state.hover ? "block" : "none",
+    };
+    return (
+      <div
+        className="button-wrapper"
+        onMouseOver={this.handleMouseIn.bind(this)}
+        onMouseOut={this.handleMouseOut.bind(this)}
+      >
+        <div className="shortcut-help-tooltip" style={tooltipStyle}>
+          <span className="shortcut-action">{this.props.shortcutAction}</span>
+          <br />
+          <span className="shortcut-help">
+            {"(" + this.props.shortcutHelp + ")"}
+          </span>
+        </div>
+        {icon}
+      </div>
+    );
   }
 }
 
