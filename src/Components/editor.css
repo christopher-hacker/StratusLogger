@@ -99,3 +99,7 @@
   font-family: monospace;
   font-style: italic;
 }
+
+.double-height {
+  height: 64px !important;
+}

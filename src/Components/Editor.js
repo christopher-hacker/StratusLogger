@@ -21,6 +21,7 @@ import {
   SkipForward,
   SkipBack,
   Clock,
+  Download,
 } from "react-feather";
 import "./editor.css";
 import "draft-js/dist/Draft.css";
@@ -35,6 +36,7 @@ class Logger extends React.Component {
     };
     this.handleKeyCommand = this.handleKeyCommand.bind(this);
     this.insertText = this.insertText.bind(this);
+    this.downloadAsDoc = this.downloadAsDoc.bind(this);
     this.compositeDecorator = new CompositeDecorator([
       {
         strategy: timestampStrategy,
@@ -126,6 +128,10 @@ class Logger extends React.Component {
     });
   }
 
+  downloadAsDoc() {
+    exportAsDoc(document.querySelector(".DraftEditor-root"), this.getSlug());
+  }
+
   render() {
     return (
       <div className="logger-wrapper">
@@ -139,6 +145,7 @@ class Logger extends React.Component {
               <PlaybackControls
                 editorState={this.state.editorState}
                 insertText={this.insertText}
+                downloadAsDoc={this.downloadAsDoc}
               />
             </div>
           </div>
@@ -176,6 +183,8 @@ class PlaybackControls extends React.Component {
   onKeyUp(e) {
     if (e.ctrlKey && e.keyCode == 74) {
       this.getTimestamp();
+    } else if (e.ctrlKey && e.shiftKey && e.keyCode == 68) {
+      this.props.downloadAsDoc();
     } else if (e.keyCode == 27) {
       this.playbackInterface.actions.playPause();
     } else if (e.ctrlKey && !e.shiftKey && e.keyCode == 37) {
@@ -192,6 +201,12 @@ class PlaybackControls extends React.Component {
   render() {
     return (
       <div className="playback-controls">
+        <PlaybackButton
+          icon={Download}
+          onClick={this.props.downloadAsDoc}
+          shortcutHelp="ctrl + shift + D"
+          shortcutAction="download as word document"
+        />
         <PlaybackButton
           icon={Clock}
           onClick={this.getTimestamp}
@@ -270,7 +285,7 @@ class PlaybackButton extends React.Component {
           <span className="shortcut-action">{this.props.shortcutAction}</span>
           <br />
           <span className="shortcut-help">
-            {"(" + this.props.shortcutHelp + ")"}
+            {this.state.hover ? "(" + this.props.shortcutHelp + ")" : null}
           </span>
         </div>
         <Icon className={className} onClick={this.onClick} />
@@ -518,6 +533,44 @@ class TimestampSpan extends React.Component {
       </span>
     );
   }
+}
+
+function exportAsDoc(element, filename = "") {
+  var preHtml =
+    "<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset='utf-8'><title>Export HTML To Doc</title></head><body>";
+  var postHtml = "</body></html>";
+  var html = preHtml + element.innerHTML + postHtml;
+
+  var blob = new Blob(["\ufeff", html], {
+    type: "application/msword",
+  });
+
+  // Specify link url
+  var url =
+    "data:application/vnd.ms-word;charset=utf-8," + encodeURIComponent(html);
+
+  // Specify file name
+  filename = filename ? filename + ".doc" : "document.doc";
+
+  // Create download link element
+  var downloadLink = document.createElement("a");
+
+  document.body.appendChild(downloadLink);
+
+  if (navigator.msSaveOrOpenBlob) {
+    navigator.msSaveOrOpenBlob(blob, filename);
+  } else {
+    // Create a link to the file
+    downloadLink.href = url;
+
+    // Setting the file name
+    downloadLink.download = filename;
+
+    //triggering the function
+    downloadLink.click();
+  }
+
+  document.body.removeChild(downloadLink);
 }
 
 export { Logger };
