@@ -185,16 +185,22 @@ class PlaybackControls extends React.Component {
       this.getTimestamp();
     } else if (e.ctrlKey && e.shiftKey && e.keyCode == 68) {
       this.props.downloadAsDoc();
+    } else if (e.ctrlKey) {
+      // no other shortcuts ust ctrl
+      return;
     } else if (e.keyCode == 27) {
       this.playbackInterface.actions.playPause();
-    } else if (e.ctrlKey && !e.shiftKey && e.keyCode == 37) {
-      this.playbackInterface.actions.back10();
-    } else if (e.ctrlKey && e.shiftKey && e.keyCode == 37) {
-      this.playbackInterface.actions.rewind();
-    } else if (e.ctrlKey && e.shiftKey && e.keyCode == 39) {
-      this.playbackInterface.actions.fastForward();
-    } else if (e.ctrlKey && !e.shiftKey && e.keyCode == 39) {
-      this.playbackInterface.actions.forward10();
+    } else if (e.altKey) {
+      // all other shortcuts use alt
+      if (e.keyCode == 49) {
+        this.playbackInterface.actions.back10();
+      } else if (e.keyCode == 50) {
+        this.playbackInterface.actions.rewind();
+      } else if (e.keyCode == 51) {
+        this.playbackInterface.actions.fastForward();
+      } else if (e.keyCode == 52) {
+        this.playbackInterface.actions.forward10();
+      }
     }
   }
 
@@ -216,13 +222,13 @@ class PlaybackControls extends React.Component {
         <PlaybackButton
           icon={SkipBack}
           onClick={this.playbackInterface.actions.back10}
-          shortcutHelp="ctrl + ←"
+          shortcutHelp="alt + 1"
           shortcutAction="skip back"
         />
         <PlaybackButton
           icon={Rewind}
           onClick={this.playbackInterface.actions.rewind}
-          shortcutHelp="ctrl + shift + ←"
+          shortcutHelp="alt + 2"
           shortcutAction="rewind"
         />
         <PlayPause
@@ -233,13 +239,13 @@ class PlaybackControls extends React.Component {
         <PlaybackButton
           icon={FastForward}
           onClick={this.playbackInterface.actions.fastForward}
-          shortcutHelp="ctrl + shift + →"
+          shortcutHelp="alt + 3"
           shortcutAction="fast forward"
         />
         <PlaybackButton
           icon={SkipForward}
           onClick={this.playbackInterface.actions.forward10}
-          shortcutHelp="ctrl + →"
+          shortcutHelp="alt + 4"
           shortcutAction="skip forward"
         />
       </div>
