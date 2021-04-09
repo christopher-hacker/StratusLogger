@@ -68,7 +68,37 @@ class Logger extends React.Component {
       } else {
         return null;
       }
+
+      document.addEventListener("keyup", (e) => {
+        this.onKeyUp(e);
+      });
     });
+  }
+
+  onKeyUp(e) {
+    if (e.keyCode == 13) {
+      var blocks = document
+          .querySelector(".public-DraftEditor-content > div")
+          .querySelectorAll(
+            ".public-DraftStyleDefault-block.public-DraftStyleDefault-ltr"
+          ),
+        currentBlockIndex = this.state.editorState
+          .getCurrentContent()
+          .getBlockMap()
+          .keySeq()
+          .findIndex(
+            (k) => k === this.state.editorState.getSelection().getStartKey()
+          ),
+        currentBlock = blocks[currentBlockIndex],
+        wrapper = document.querySelector(".logger-editor-wrapper");
+
+      if (
+        currentBlock.getBoundingClientRect().bottom >
+        wrapper.getBoundingClientRect().bottom
+      ) {
+        wrapper.scrollTop = wrapper.scrollHeight;
+      }
+    }
   }
 
   saveEditorContent(data) {
