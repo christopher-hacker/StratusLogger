@@ -23,6 +23,6 @@
       "css": ["/static/css/main.chunk.css", "/static/css/2.chunk.css"]
     }
   ],
-  "permissions": ["activeTab", "storage"],
+  "permissions": ["storage"],
   "web_accessible_resources": ["/static/*"]
 }
