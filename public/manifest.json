@@ -14,7 +14,10 @@
   },
   "content_scripts": [
     {
-      "matches": ["*://*/webclient/*"],
+      "matches": [
+        "*://cbschi-strat1.cbs.ad.cbs.net/webclient",
+        "*://cbschi-strat1/webclient/"
+      ],
       "js": [
         "/static/js/2.chunk.js",
         "/static/js/main.chunk.js",
