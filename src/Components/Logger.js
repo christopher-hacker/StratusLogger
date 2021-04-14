@@ -12,7 +12,7 @@ import {
   CompositeDecorator,
 } from "draft-js";
 import React from "react";
-import "./editor.css";
+import "./logger.css";
 import "draft-js/dist/Draft.css";
 
 function insertAtCursor(text, editorState, data) {
