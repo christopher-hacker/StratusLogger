@@ -1,6 +1,6 @@
 import React from "react";
 import { X, Minimize2, Maximize2, Edit3 } from "react-feather";
-import { Logger } from "./Components/Editor";
+import { Logger } from "./Components/Logger";
 import "./App.css";
 
 const iconSVG =
