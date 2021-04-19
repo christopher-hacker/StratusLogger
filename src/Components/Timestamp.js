@@ -1,5 +1,5 @@
 import React from "react";
-import PlaybackInterface from "./Playback";
+import { PlaybackInterface } from "./Playback";
 
 const TIMESTAMP_REGEX = /\(\d\d:\d\d:\d\d,\d\d\)/g;
 
@@ -22,10 +22,6 @@ class TimestampSpan extends React.Component {
     this.playbackInterface = new PlaybackInterface();
   }
 
-  jumpToTime(timestampString) {
-    this.playbackInterface.jumpToTime(timestampString);
-  }
-
   render() {
     return (
       <span
@@ -33,7 +29,8 @@ class TimestampSpan extends React.Component {
         data-offset-key={this.props.offsetKey}
         onClick={() => {
           let timestampString = this.props.children[0].props.text;
-          this.jumpToTime(timestampString);
+          console.log(this.playbackInterface);
+          this.playbackInterface.jumpToTime(timestampString);
         }}
       >
         {this.props.children}

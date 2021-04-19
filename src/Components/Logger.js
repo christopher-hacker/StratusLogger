@@ -1,5 +1,5 @@
 /*global chrome*/
-import PlaybackControls from "./Playback";
+import { PlaybackControls } from "./Playback";
 import InlineStyleControls from "./InlineStyle";
 import { TimestampSpan, timestampStrategy } from "./Timestamp";
 import {

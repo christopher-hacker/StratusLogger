@@ -197,7 +197,7 @@ class PlayPause extends React.Component {
   }
 }
 
-export default class PlaybackControls extends React.Component {
+class PlaybackControls extends React.Component {
   constructor(props) {
     super(props);
     this.playbackInterface = new PlaybackInterface();
@@ -287,3 +287,5 @@ export default class PlaybackControls extends React.Component {
     );
   }
 }
+
+export { PlaybackControls, PlaybackInterface };
