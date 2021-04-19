@@ -110,7 +110,7 @@ class PlaybackInterface {
 
   getTimestampText() {
     var text = this.getTimestampEl().value,
-      pat = /(?<=\()\d\d:\d\d:\d\d(?=\,\d\d\))/,
+      pat = /\d\d:\d\d:\d\d(?=\,\d\d)/,
       // drop the timestamp
       timestampText = pat.exec(text)[0];
     return timestampText;
