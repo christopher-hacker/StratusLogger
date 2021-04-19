@@ -93,10 +93,19 @@ class Logger extends React.Component {
     var slug = this.getSlug();
     this.getSavedEditorData((savedData) => {
       if (Object.keys(savedData).includes(slug)) {
-        var contentState = savedData[slug],
-          editorState = EditorState.createWithContent(
-            convertFromRaw(contentState)
+        var contentState = savedData[slug];
+
+        // replace any instances of old timestamp format with new one
+        for (var i = 0; i < contentState.blocks.length; i++) {
+          contentState.blocks[i].text = contentState.blocks[i].text.replaceAll(
+            /(?<=\(\d\d:\d\d:\d\d)(,\d\d)(?=\))/g,
+            ""
           );
+        }
+
+        var editorState = EditorState.createWithContent(
+          convertFromRaw(contentState)
+        );
 
         editorState = EditorState.set(editorState, {
           decorator: this.compositeDecorator,

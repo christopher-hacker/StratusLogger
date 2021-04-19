@@ -108,8 +108,12 @@ class PlaybackInterface {
       .querySelector("input");
   }
 
-  getTimestamp() {
-    return this.getTimestampEl().value;
+  getTimestampText() {
+    var text = this.getTimestampEl().value,
+      pat = /(?<=\()\d\d:\d\d:\d\d(?=\,\d\d\))/,
+      // drop the timestamp
+      timestampText = pat.exec(text)[0];
+    return timestampText;
   }
 
   jumpToTime(timestampString) {
@@ -212,7 +216,9 @@ class PlaybackControls extends React.Component {
   }
 
   getTimestamp() {
-    this.props.insertText("(" + this.playbackInterface.getTimestamp() + ") ");
+    this.props.insertText(
+      "(" + this.playbackInterface.getTimestampText() + ") "
+    );
   }
 
   onKeyUp(e) {

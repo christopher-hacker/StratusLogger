@@ -1,7 +1,7 @@
 import React from "react";
 import { PlaybackInterface } from "./Playback";
 
-const TIMESTAMP_REGEX = /\(\d\d:\d\d:\d\d,\d\d\)/g;
+const TIMESTAMP_REGEX = /\(\d\d:\d\d:\d\d\)/g;
 
 function findWithRegex(regex, contentBlock, callback) {
   const text = contentBlock.getText();
@@ -22,6 +22,11 @@ class TimestampSpan extends React.Component {
     this.playbackInterface = new PlaybackInterface();
   }
 
+  jumpToTime(timestampString) {
+    var timestampWithFrame = timestampString.slice(0, -1) + ",00)";
+    this.playbackInterface.jumpToTime(timestampWithFrame);
+  }
+
   render() {
     return (
       <span
@@ -29,8 +34,7 @@ class TimestampSpan extends React.Component {
         data-offset-key={this.props.offsetKey}
         onClick={() => {
           let timestampString = this.props.children[0].props.text;
-          console.log(this.playbackInterface);
-          this.playbackInterface.jumpToTime(timestampString);
+          this.jumpToTime(timestampString);
         }}
       >
         {this.props.children}
