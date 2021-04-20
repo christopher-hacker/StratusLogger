@@ -46,10 +46,13 @@ class PlaybackButton extends React.Component {
       >
         <div className="shortcut-help-tooltip" style={tooltipStyle}>
           <span className="shortcut-action">{this.props.shortcutAction}</span>
-          <br />
-          <span className="shortcut-help">
-            {this.state.hover ? "(" + this.props.shortcutHelp + ")" : null}
-          </span>
+          {this.props.shortcutHelp ? (
+            <div>
+              <span className="shortcut-help">
+                {this.state.hover ? "(" + this.props.shortcutHelp + ")" : null}
+              </span>
+            </div>
+          ) : null}
         </div>
         <Icon className={className} onClick={this.onClick} />
       </div>
@@ -296,7 +299,6 @@ class PlaybackControls extends React.Component {
         <PlaybackButton
           icon={Download}
           onClick={this.props.downloadAsDoc}
-          shortcutHelp="ctrl + shift + D"
           shortcutAction="download as word document"
         />
         <PlaybackButton
