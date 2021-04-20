@@ -234,6 +234,7 @@ class Logger extends React.Component {
             editorState={this.state.editorState}
             handleKeyCommand={this.handleKeyCommand}
             onChange={this.onChange}
+            spellCheck
           />
         </div>
       </div>
