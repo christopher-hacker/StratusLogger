@@ -222,26 +222,39 @@ class PlaybackControls extends React.Component {
   }
 
   onKeyUp(e) {
-    if (e.ctrlKey && e.keyCode == 74) {
-      this.getTimestamp();
-    } else if (e.ctrlKey && e.shiftKey && e.keyCode == 68) {
-      this.props.downloadAsDoc();
-    } else if (e.ctrlKey) {
-      // no other shortcuts ust ctrl
-      return;
-    } else if (e.keyCode == 27) {
-      this.playbackInterface.actions.playPause();
-    } else if (e.altKey) {
-      // all other shortcuts use alt
-      if (e.keyCode == 49) {
-        this.playbackInterface.actions.back10();
-      } else if (e.keyCode == 50) {
-        this.playbackInterface.actions.rewind();
-      } else if (e.keyCode == 51) {
-        this.playbackInterface.actions.fastForward();
-      } else if (e.keyCode == 52) {
-        this.playbackInterface.actions.forward10();
+    var self = this;
+    var capturedEvent = (function () {
+      if (e.ctrlKey && !e.shiftKey && !e.altKey) {
+        switch (e.keyCode) {
+          case 74: // J
+            self.getTimestamp();
+            return true;
+        }
       }
+      if (e.altKey && !e.ctrlKey && !e.shiftKey) {
+        switch (e.keyCode) {
+          case 49: // 1
+            self.playbackInterface.actions.back10();
+            return true;
+          case 50: // 2
+            self.playbackInterface.actions.rewind();
+            return true;
+          case 51: // 3
+            self.playbackInterface.actions.fastForward();
+            return true;
+          case 52: // 4
+            self.playbackInterface.actions.forward10();
+            return true;
+        }
+      }
+      if (!e.ctrlKey && !e.shiftKey && !e.altKey && e.keyCode === 27) {
+        self.playbackInterface.actions.playPause();
+        return true;
+      }
+    })();
+    if (capturedEvent === true) {
+      console.log(e);
+      return false;
     }
   }
 
