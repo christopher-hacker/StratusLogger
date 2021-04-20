@@ -89,6 +89,34 @@ class PlaybackInterface {
         el.click();
       };
     });
+
+    // override play button to skip back on play
+    this.togglePlayback = this.actions.playPause;
+    this.actions.playPause = () => {
+      if (this.isPlaying() && !this.isAtStart()) {
+        var timestampDate = this.getCurrentTimestampDate();
+        timestampDate = new Date(timestampDate - 1000);
+        var timestampString =
+          "(" +
+          String(timestampDate.getHours()).padStart(2, "0") +
+          ":" +
+          String(timestampDate.getMinutes()).padStart(2, "0") +
+          ":" +
+          String(timestampDate.getSeconds()).padStart(2, "0") +
+          ",00" +
+          ")";
+        this.jumpToTime(timestampString);
+        // await video load
+        var loaded = setInterval(() => {
+          if (document.querySelectorAll(".spinner-outer").length == 0) {
+            this.togglePlayback();
+            clearInterval(loaded);
+          }
+        }, 50);
+      } else {
+        this.togglePlayback();
+      }
+    };
   }
 
   jumpToTime(timestampString) {
@@ -113,9 +141,9 @@ class PlaybackInterface {
     }
   }
 
-  getCurrentTimestampDate() {
+  getCurrentTimestampDate(which = "playback") {
     var date = new Date(),
-      timestampText = this.getTimestampText(),
+      timestampText = this.getTimestampText((which = which)),
       pat = /(\d\d):(\d\d):(\d\d)/g,
       m = pat.exec(timestampText),
       timestampVals = {
@@ -130,14 +158,20 @@ class PlaybackInterface {
     return date;
   }
 
-  getTimestampEl() {
+  getTimestampEl(which = "playback") {
+    if (which !== "playback" && which !== "start") {
+      throw TypeError(
+        "which must be 'playback' or 'start', not '" + which + "'"
+      );
+    }
+
     return document
-      .querySelectorAll(".timecode-control")[1]
-      .querySelector("input");
+      .querySelectorAll(".timecode-control")
+      [which == "playback" ? 1 : 0].querySelector("input");
   }
 
-  getTimestampText() {
-    var text = this.getTimestampEl().value,
+  getTimestampText(which = "playback") {
+    var text = this.getTimestampEl((which = which)).value,
       pat = /\d\d:\d\d:\d\d(?=\,\d\d)/,
       // drop the timestamp
       timestampText = pat.exec(text)[0];
@@ -146,6 +180,13 @@ class PlaybackInterface {
 
   isPlaying() {
     return document.querySelectorAll(".btn-play").length > 0;
+  }
+
+  isAtStart() {
+    return (
+      this.getTimestampEl("start").value ==
+      this.getTimestampEl("playback").value
+    );
   }
 }
 
@@ -288,7 +329,6 @@ class PlaybackControls extends React.Component {
       }
     })();
     if (capturedEvent === true) {
-      console.log(e);
       return false;
     }
   }
