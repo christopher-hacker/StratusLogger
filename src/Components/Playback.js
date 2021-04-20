@@ -72,7 +72,7 @@ class PlaybackInterface {
 
     els.forEach((el) => {
       el.addEventListener("click", () => {
-        this.checkStatus();
+        this.broadcastStatus();
       });
     });
 
@@ -82,14 +82,22 @@ class PlaybackInterface {
       let label = labels[i];
       this.buttons[label] = el;
       this.actions[label] = () => {
-        this.checkStatus();
+        this.broadcastStatus();
         el.click();
       };
     });
   }
 
-  checkStatus() {
-    if (document.querySelectorAll(".btn-play").length > 0) {
+  jumpToTime(timestampString) {
+    let el = this.getTimestampEl();
+    // drop the parentheses
+    el.value = timestampString.slice(1, -1);
+    // trigger jump in player
+    el.dispatchEvent(new KeyboardEvent("blur"));
+  }
+
+  broadcastStatus() {
+    if (this.isPlaying()) {
       window.postMessage({
         source: "__stratus_logger_extension__",
         playerStatus: "playing",
@@ -100,6 +108,23 @@ class PlaybackInterface {
         playerStatus: "paused",
       });
     }
+  }
+
+  getCurrentTimestampDate() {
+    var date = new Date(),
+      timestampText = this.getTimestampText(),
+      pat = /(\d\d):(\d\d):(\d\d)/g,
+      m = pat.exec(timestampText),
+      timestampVals = {
+        h: Number(m[1]),
+        m: Number(m[2]),
+        s: Number(m[3]),
+      };
+
+    date.setHours(timestampVals.h);
+    date.setMinutes(timestampVals.m);
+    date.setSeconds(timestampVals.s);
+    return date;
   }
 
   getTimestampEl() {
@@ -116,12 +141,8 @@ class PlaybackInterface {
     return timestampText;
   }
 
-  jumpToTime(timestampString) {
-    let el = this.getTimestampEl();
-    // drop the parentheses
-    el.value = timestampString.slice(1, -1);
-    // trigger jump in player
-    el.dispatchEvent(new KeyboardEvent("blur"));
+  isPlaying() {
+    return document.querySelectorAll(".btn-play").length > 0;
   }
 }
 
@@ -216,9 +237,20 @@ class PlaybackControls extends React.Component {
   }
 
   getTimestamp() {
-    this.props.insertText(
-      "(" + this.playbackInterface.getTimestampText() + ") "
-    );
+    var date = this.playbackInterface.getCurrentTimestampDate();
+    if (!this.playbackInterface.isPlaying()) {
+      date = date - 1000;
+    } else {
+      date = date - 0;
+    }
+    date = new Date(date);
+    var destinationTimestamp =
+      String(date.getHours()).padStart(2, "0") +
+      ":" +
+      String(date.getMinutes()).padStart(2, "0") +
+      ":" +
+      String(date.getSeconds()).padStart(2, "0");
+    this.props.insertText("(" + destinationTimestamp + ") ");
   }
 
   onKeyUp(e) {
