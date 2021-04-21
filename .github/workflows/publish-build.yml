@@ -7,12 +7,12 @@ jobs:
       matrix:
         node-version: [15.x]
     steps:
+      - name: checkout repo
+        uses: actions/checkout@v2
       - name: set env vars
         run: |
           echo "VERSION=$(jq -r '.version' public/manifest.json)" >> $GITHUB_ENV
           echo "FILENAME=$(v$VERSION.zip" >> $GITHUB_ENV
-      - name: checkout repo
-        uses: actions/checkout@v2
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v1
         with:
