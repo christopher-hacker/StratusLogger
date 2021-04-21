@@ -5,7 +5,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [10.x, 12.x, 14.x, 15.x]
+        node-version: [15.x]
     steps:
       - name: set env vars
         run: |
@@ -35,7 +35,7 @@ jobs:
           title: ${{ env.VERSION }}
           files: ${{ env.FILENAME }}
       - name: publish
-        uses: Klemensas/chrome-extension-upload-action@$VERSION
+        uses: Klemensas/chrome-extension-upload-action@1.4.1
         with:
           refresh-token: ${{ secrets.REFRESH_TOKEN }}
           client-id: ${{ secrets.CLIENT_ID }}
