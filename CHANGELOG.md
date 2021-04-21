@@ -1,6 +1,6 @@
 # Changelog
 
-## [0.0.3] - 2021-04-20
+## [[0.0.3](https://github.com/hackerlikecomputer/StratusLogger/releases/tag/v0.0.3)]- 2021-04-20
 
 ### Added:
 
