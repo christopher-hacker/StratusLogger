@@ -1,0 +1,45 @@
+name: publish-build
+on: push
+jobs:
+  publish-latest-version:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [10.x, 12.x, 14.x, 15.x]
+    steps:
+      - name: set env vars
+        run: |
+          echo "VERSION=$(jq -r ".version" public/manifest.json)" >> $GITHUB_ENV
+          echo "FILENAME=$(v$VERSION.zip" >> $GITHUB_ENV
+      - name: checkout repo
+        uses: actions/checkout@v2
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: compare-version
+        run: |
+          cv=$(git tag | head)
+          if [ "$cv" == "$VERSION" ]; then
+            exit 1
+          fi
+      - run: npm ci
+      - run: npm run build
+      - run: zip -r $FILENAME build
+      - name: create release
+        uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          automatic_release_tag: "latest"
+          prerelease: false
+          title: ${{ env.VERSION }}
+          files: ${{ env.FILENAME }}
+      - name: publish
+        uses: Klemensas/chrome-extension-upload-action@$VERSION
+        with:
+          refresh-token: ${{ secrets.REFRESH_TOKEN }}
+          client-id: ${{ secrets.CLIENT_ID }}
+          client-secret: ${{ secrets.CLIENT_SECRET }}
+          file-name: "./extension.zip"
+          app-id: "bhibdhiabdiojelgbfgfoflfkjmgfdop"
+          publish: true
