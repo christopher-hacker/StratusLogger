@@ -20,7 +20,7 @@ jobs:
           node-version: ${{ matrix.node-version }}
       - name: compare-version
         run: |
-          cv=$(git tag | head)
+          cv=$(git tag | tail -1)
           if [ "$cv" = v"$VERSION" ]; then
             exit 1
           fi
