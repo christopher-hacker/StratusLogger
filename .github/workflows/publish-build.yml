@@ -24,7 +24,7 @@ jobs:
             exit 1
           fi
       - run: npm ci
-      - run: npm run build
+      - run: CI=false npm run build
       - run: zip -r $FILENAME build
       - name: create release
         uses: "marvinpinto/action-automatic-releases@latest"
