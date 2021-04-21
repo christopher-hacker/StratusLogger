@@ -34,12 +34,11 @@ jobs:
           prerelease: false
           title: ${{ env.VERSION }}
           files: ${{ env.FILENAME }}
-      - name: publish
-        uses: Klemensas/chrome-extension-upload-action@1.4.1
+      - name: publish to web store
+        uses: mnao305/chrome-extension-upload@1.1.1
         with:
-          refresh-token: ${{ secrets.REFRESH_TOKEN }}
+          file-path: ${{ env.FILENAME }}
+          extension-id: "bhibdhiabdiojelgbfgfoflfkjmgfdop"
           client-id: ${{ secrets.CLIENT_ID }}
           client-secret: ${{ secrets.CLIENT_SECRET }}
-          file-name: "./extension.zip"
-          app-id: "bhibdhiabdiojelgbfgfoflfkjmgfdop"
-          publish: true
+          refresh-token: ${{ secrets.REFRESH_TOKEN }}
