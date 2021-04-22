@@ -120,13 +120,10 @@ class PlaybackInterface {
   }
 
   jumpToTime(timestampString) {
-    if (this.isPlaying()) {
-      this.togglePlayback();
-    }
     let el = this.getTimestampEl();
     // drop the parentheses
     el.value = timestampString.slice(1, -1);
-    // blur event triggers jump in player
+    // trigger jump in player
     el.dispatchEvent(new KeyboardEvent("blur"));
   }
 
