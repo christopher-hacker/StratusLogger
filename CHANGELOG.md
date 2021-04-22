@@ -1,5 +1,11 @@
 # Changelog
 
+## [[0.0.4](https://github.com/hackerlikecomputer/StratusLogger/releases/tag/v0.0.4)]- 2021-04-22
+
+### Removed:
+
+- stopped pausing before jumping, it results in occasional conflicting play/pause commands (dbd0074213e7a3a909e74226876082b3559f29ee)
+
 ## [[0.0.3](https://github.com/hackerlikecomputer/StratusLogger/releases/tag/v0.0.3)]- 2021-04-20
 
 ### Added:
