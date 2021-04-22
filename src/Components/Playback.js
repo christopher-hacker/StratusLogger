@@ -120,9 +120,6 @@ class PlaybackInterface {
   }
 
   jumpToTime(timestampString) {
-    if (this.isPlaying()) {
-      this.togglePlayback();
-    }
     let el = this.getTimestampEl();
     // drop the parentheses
     el.value = timestampString.slice(1, -1);
