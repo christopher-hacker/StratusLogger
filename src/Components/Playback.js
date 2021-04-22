@@ -94,7 +94,7 @@ class PlaybackInterface {
     this.togglePlayback = this.actions.playPause;
     this.actions.playPause = () => {
       if (this.isPlaying() && !this.isAtStart()) {
-        var timestampDate = this.getCurrentTimestampDate();
+        var timestampDate = this.getTimestampDate();
         timestampDate = new Date(timestampDate - 1000);
         var timestampString =
           "(" +
@@ -141,7 +141,7 @@ class PlaybackInterface {
     }
   }
 
-  getCurrentTimestampDate(which = "playback") {
+  getTimestampDate(which = "playback") {
     var date = new Date(),
       timestampText = this.getTimestampText((which = which)),
       pat = /(\d\d):(\d\d):(\d\d)/g,
@@ -281,7 +281,7 @@ class PlaybackControls extends React.Component {
   }
 
   getTimestamp() {
-    var date = this.playbackInterface.getCurrentTimestampDate();
+    var date = this.playbackInterface.getTimestampDate();
     if (!this.playbackInterface.isPlaying()) {
       date = date - 1000;
     } else {
