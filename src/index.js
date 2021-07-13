@@ -16,9 +16,8 @@ function doSetup() {
           "button[automation-id='button-actions']"
         );
         actionsDropdown.addEventListener("click", () => {
-          var openWithDropdown = document.querySelectorAll(
-              "ul.dropdown-menu"
-            )[1],
+          var openWithDropdown =
+              document.querySelectorAll("ul.dropdown-menu")[1],
             li = document.createElement("li"),
             classes = ["menu-item", "ng-tns-c44-198", "ng-star-inserted"];
           li.classList.add(...classes);
